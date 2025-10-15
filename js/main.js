@@ -269,17 +269,17 @@
         STATE.bonusMove = true;
         STATE.mode = 'move';
         STATE.opponentHitThisTurn = true;
-        playPing(1700, 900, 0.5, 0.20); // korkea ping vastustajaan
+        playPing(1700, 900, 0.2, 0.5); // korkea ping vastustajaan
         updateUI();
         return; // älä vaihda vuoroa vielä, odota siirto
       } else {
         // Oma massa: vähennä yksi piste
         STATE.scores[hitter]--;
-        playPing(800, 500, 0.5, 0.14); // keskialueen ping omaan
+        playPing(800, 500, 0.2, 0.5); // keskialueen ping omaan
       }
     } else if(ms && ms.owner==='N'){
       // Neutraaliin massaan osuma: ääni, ei pisteitä
-      playPing(1000, 700, 0.5, 0.16);
+      playPing(1000, 700, 0.2, 0.5);
     }
     endTurn(false);
   }
@@ -304,9 +304,14 @@
       }
       STATE.opponentHitThisTurn = false;
     }
-    // Päättyykö peli, kun molemmilla on vähintään 3 missiä?
-    if(STATE.misses.A>=3 && STATE.misses.B>=3){
-      alert(I18N.t('endNoHits'));
+    // Päättyykö peli, kun molemmilla on vähintään 4 missiä? Julista voittaja pisteillä
+    if(STATE.misses.A>=4 && STATE.misses.B>=4){
+      if(STATE.scores.A !== STATE.scores.B){
+        const winner = STATE.scores.A>STATE.scores.B ? I18N.t('playerA') : I18N.t('playerB');
+        alert(I18N.t('win', winner));
+      } else {
+        alert(I18N.t('endNoHits'));
+      }
       resetGame(); return;
     }
     // Voitto?
@@ -380,7 +385,7 @@
       STATE.ball.vx = dx * scl; STATE.ball.vy = dy * scl;
       STATE.ball.moving = true;
       aiming.active=false;
-      playPing(500, 300, 0.5, 0.16); // selkeä 0.5 s ping lyöntiin
+      playPing(500, 300, 0.1, 0.5); // selkeä 0.5 s ping lyöntiin
       updateUI();
     }
     if(draggingMass){

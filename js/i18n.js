@@ -22,7 +22,7 @@
       howto4: 'Gravisiirto on sallittu joka toisella omalla vuorolla.',
       physicsNote: 'Näytön koon muuttuessa pöytä skaalautuu. Fysiikka: potentiaalikuopat, kiihtyvyys ~ ∇V; kitka ja seinäkimpoama vaimennuksella.',
       win: (winner)=>`Voitto: ${winner}!`,
-      endNoHits: 'Peli päättyy: kolme peräkkäistä lyöntiä ilman osumaa vastustajan massaan.',
+      endNoHits: 'Peli päättyy: neljä peräkkäistä lyöntiä ilman osumaa vastustajan massaan.',
       langLabel: 'Kieli',
     },
     en: {
@@ -45,7 +45,7 @@
       howto4: 'Gravity move is allowed every other own turn.',
       physicsNote: 'When the screen size changes, the table scales. Physics: potential wells, acceleration ~ ∇V; friction and wall bounce with damping.',
       win: (winner)=>`Winner: ${winner}!`,
-      endNoHits: 'Game ends: three consecutive shots without hitting an opponent mass.',
+      endNoHits: 'Game ends: four consecutive shots without hitting an opponent mass.',
       langLabel: 'Language',
     }
   };
