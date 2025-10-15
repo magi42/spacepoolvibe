@@ -8,7 +8,9 @@
     turn: document.getElementById('turn'),
     shootBtn: document.getElementById('shootBtn'),
     moveBtn: document.getElementById('moveBtn'),
-    resetBtn: document.getElementById('resetBtn')
+    resetBtn: document.getElementById('resetBtn'),
+    missA: document.getElementById('missA'),
+    missB: document.getElementById('missB')
   };
 
   const W = () => canvas.width;
@@ -31,6 +33,7 @@
     wasBonusMove:false,   // viimeisin siirto oli bonus-siirto
     noOpponentHitShots:0, // peräkkäisten lyöntien määrä ilman osumaa vastustajan massaan
     opponentHitThisTurn:false, // tämän vuoron aikana osuttiinko vastustajan massaan
+    misses:{A:0,B:0}, // per-player miss counters
   };
 
   // Asetukset
@@ -77,6 +80,7 @@
     STATE.started = true;
     STATE.noOpponentHitShots = 0;
     STATE.opponentHitThisTurn = false;
+    STATE.misses.A = 0; STATE.misses.B = 0;
     updateUI();
   }
 
@@ -95,6 +99,8 @@
     ui.sA.textContent = STATE.scores.A;
     ui.sB.textContent = STATE.scores.B;
     ui.turn.textContent = STATE.turn==='A'? I18N.t('playerA') : I18N.t('playerB');
+    if(ui.missA) ui.missA.textContent = STATE.misses.A>0? `(${STATE.misses.A})` : '';
+    if(ui.missB) ui.missB.textContent = STATE.misses.B>0? `(${STATE.misses.B})` : '';
     ui.moveBtn.disabled = !(STATE.bonusMove || STATE.allowGraviMove[STATE.turn]);
     if(STATE.mode==='shoot'){
       ui.shootBtn.classList.add('primary');
@@ -164,6 +170,10 @@
       ctx.beginPath(); ctx.arc(STATE.ball.x, STATE.ball.y, CONF.ballR, 0, Math.PI*2); ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth=2; ctx.stroke();
     }
+
+    // Näytä miss-counterit lähellä pisteitä (tekstilaatikot ovat UI-paneelissa, mutta varmistetaan päivitys)
+    if(ui.missA) ui.missA.textContent = STATE.misses.A>0? `(${STATE.misses.A})` : '';
+    if(ui.missB) ui.missB.textContent = STATE.misses.B>0? `(${STATE.misses.B})` : '';
 
     // Aloitusalueet visuaalisesti
     drawSpawnZones();
@@ -259,12 +269,17 @@
         STATE.bonusMove = true;
         STATE.mode = 'move';
         STATE.opponentHitThisTurn = true;
+        playPing(1700, 900, 0.5, 0.20); // korkea ping vastustajaan
         updateUI();
         return; // älä vaihda vuoroa vielä, odota siirto
       } else {
         // Oma massa: vähennä yksi piste
         STATE.scores[hitter]--;
+        playPing(800, 500, 0.5, 0.14); // keskialueen ping omaan
       }
+    } else if(ms && ms.owner==='N'){
+      // Neutraaliin massaan osuma: ääni, ei pisteitä
+      playPing(1000, 700, 0.5, 0.16);
     }
     endTurn(false);
   }
@@ -282,17 +297,15 @@
       // Lyöntivuoron jälkeen palautetaan oikeus, jos edellinen oma vuoro oli siirto
       if(!STATE.allowGraviMove[me]) STATE.allowGraviMove[me] = true; // palautuu käytännössä joka toisen vuoron rytmissä
     }
-    // Päivitä "ei osumaa vastustajaan" -laskuri lyöntivuoron päättyessä
-    if(!STATE.wasBonusMove){ // lasketaan vain lyöntivuoro, ei bonus-siirtoa
-      if(STATE.opponentHitThisTurn){
-        STATE.noOpponentHitShots = 0;
-      } else {
-        STATE.noOpponentHitShots++;
+    // Päivitä miss-laskurit lyöntivuorosta (ei bonus-siirrosta)
+    if(!STATE.wasBonusMove){
+      if(!STATE.opponentHitThisTurn){
+        STATE.misses[me] = (STATE.misses[me]||0) + 1;
       }
       STATE.opponentHitThisTurn = false;
     }
-    // Päättyykö peli kolmen peräkkäisen "ei osuttu vastustajaan" -lyönnin jälkeen?
-    if(STATE.noOpponentHitShots >= 3){
+    // Päättyykö peli, kun molemmilla on vähintään 3 missiä?
+    if(STATE.misses.A>=3 && STATE.misses.B>=3){
       alert(I18N.t('endNoHits'));
       resetGame(); return;
     }
@@ -367,6 +380,7 @@
       STATE.ball.vx = dx * scl; STATE.ball.vy = dy * scl;
       STATE.ball.moving = true;
       aiming.active=false;
+      playPing(500, 300, 0.5, 0.16); // selkeä 0.5 s ping lyöntiin
       updateUI();
     }
     if(draggingMass){
@@ -402,6 +416,24 @@
       step(dt);
     draw();
     requestAnimationFrame(loop);
+  }
+
+  // --- Äänet ---------------------------------------------------------------
+  let audioCtx = null;
+  function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+  function playPing(startFreq=1200, endFreq=800, dur=0.5, gain=0.18){
+    ensureAudio();
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(startFreq, t0);
+    osc.frequency.linearRampToValueAtTime(endFreq, t0 + dur);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0+0.02);
+    g.gain.exponentialRampToValueAtTime(1e-4, t0+dur);
+    osc.connect(g).connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0+dur+0.05);
   }
 
   // Responssiivisuus
