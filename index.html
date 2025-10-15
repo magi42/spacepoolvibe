@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Avaruusbiljardi – prototyyppi</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/i18n.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <aside class="panel">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h1>🌌 Avaruusbiljardi</h1>
+        <select id="langSelect" class="btn" style="padding:8px 10px">
+          <option value="fi">🇫🇮 Suomi</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+      </div>
+      <div id="proto" class="muted small">Prototyyppi – 2 pelaajaa, vuorottainen lyönti tai gravisiirto (joka toinen oma vuoro). Tavoite 7 pistettä.</div>
+      <div class="hr"></div>
+      <div class="score">
+        <div>⚪ Pelaaja A: <b id="sA">0</b></div>
+        <div>🔵 Pelaaja B: <b id="sB">0</b></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <span>Vuoro: <b id="turn">Pelaaja A</b></span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="shootBtn">Lyö (hiirellä vedä & vapauta)</button>
+        <button class="btn" id="moveBtn">Gravisiirto</button>
+        <button class="btn" id="resetBtn">Uusi peli</button>
+      </div>
+      <div class="legend">
+        <div class="chip"><span class="dot massS"></span> <span id="legendS">Pieni massa</span></div>
+        <div class="chip"><span class="dot massM"></span> <span id="legendM">Keskimassa</span></div>
+        <div class="chip"><span class="dot massL"></span> <span id="legendL">Suuri massa</span></div>
+        <div class="chip"><span class="dot ball"></span> <span id="legendBall">Pallo</span></div>
+      </div>
+      <div class="hr"></div>
+      <div>
+        <b id="howtoLbl">Ohje</b>
+        <ul class="list">
+          <li id="howto1">Vasen hiiri: <span class="kbd">pidä</span> ja <span class="kbd">vedä</span> aloitusalueelta → lyönti suunta/potku (kun <em>Lyö</em>-tila).</li>
+          <li id="howto2">"Gravisiirto"-tilassa: <span class="kbd">raahaa</span> yhtä <em>omaa</em> massaa ≤ 100 px. Ei keskiviivan yli.</li>
+          <li id="howto3">Tasku kulmassa = +1 piste. Osuma massaan = pallo poissa.</li>
+          <li id="howto4">Gravisiirto on sallittu joka toisella omalla vuorolla.</li>
+        </ul>
+      </div>
+      <div class="hr"></div>
+      <div id="physicsNote" class="small muted">Näytön koon muuttuessa pöytä skaalautuu. Fysiikka: potentiaalikuopat, kiihtyvyys ~ ∇V; kitka ja seinäkimpoama vaimennuksella.</div>
+    </aside>
+
+    <main class="panel" style="position:relative;min-height:600px">
+      <canvas id="board" width="1000" height="640" aria-label="pelipöytä"></canvas>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
